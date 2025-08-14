@@ -3,8 +3,10 @@
 import type React from "react";
 
 import { useWeather } from "@/api/weather";
+import { SavedCities } from "@/components/SavedCities";
 import { SearchForm } from "@/components/SearchForm";
 import { WeatherDisplay } from "@/components/WeatherDisplay";
+import type { WeatherData } from "@/interfaces/weather-data";
 import { Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -12,7 +14,9 @@ export default function WeatherApp() {
   const [city, setCity] = useState("");
   const { weather, loading, error, searchWeather } = useWeather();
 
-  const [savedCities, setSavedCities] = useState<{ [name: string]: any }>({});
+  const [savedCities, setSavedCities] = useState<{
+    [name: string]: WeatherData;
+  }>({});
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +43,15 @@ export default function WeatherApp() {
     setSelectedCity(null);
   };
 
+  const handleSelectSaved = (name: string) => {
+    setSelectedCity(name);
+    setCity(name);
+  };
+
+  const displayWeather =
+    selectedCity && savedCities[selectedCity]
+      ? savedCities[selectedCity]
+      : weather;
 
   return (
     <div className="min-h-screen p-4 bg-[#EDEFF2]">
@@ -61,6 +74,12 @@ export default function WeatherApp() {
           error={error}
         />
 
+        <SavedCities
+          cities={savedCities}
+          selectedCity={selectedCity}
+          onSelect={handleSelectSaved}
+        />
+
         {!weather && loading && (
           <div className="text-center text-gray-500 mt-8">
             <p>Cargando...</p>
@@ -73,8 +92,7 @@ export default function WeatherApp() {
           </div>
         )}
 
-        {weather && <WeatherDisplay weather={weather} />}
-
+        {displayWeather && <WeatherDisplay weather={displayWeather} />}
       </div>
     </div>
   );
